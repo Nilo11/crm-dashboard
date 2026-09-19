@@ -1,0 +1,7 @@
+ID,Name,Email,Phone,Company,Status,Deal Value (₹),Notes,Created At
+7,Nisha,Nisha@gmail.com,,Xyz,Contacted,8000.0,,2026-09-16 18:52:06
+5,Test User,testuser1@example.com,,Acme,New,100.0,from api test,2026-09-16 18:49:13
+4,Nilo,Nilo@gmail.com,+917875984786,mnc,New,0.0,,2026-09-16 17:31:48
+3,Mahendra patil,mahendra@apex.com,+917788994455,Apex Systems,Closed,5000.0,lead is closed,2026-09-16 17:31:12
+2,Sarah Khan,sarah@innovate.io,+917788995566,Innovate,New,9000.0,,2026-09-16 17:31:12
+1,Aliya Kapoor,alia@techcorp.com,+917788662211,TechCorp,Contacted,0.0,,2026-09-16 17:31:12

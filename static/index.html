@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }
+    </script>
+</head>
+<body class="bg-slate-950 font-sans text-slate-100 min-h-screen select-none">
+
+    <!-- Top Window Control Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 flex items-center justify-between h-14 px-4">
+        <div class="flex items-center space-x-3">
+            <div class="w-7 h-7 rounded-lg bg-sky-500 flex items-center justify-center font-bold text-white shadow-md shadow-sky-500/30 text-xs">N</div>
+            <span class="font-bold text-sm text-white tracking-wide">CRM Dashboard</span>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <button onclick="minimizeApp()" title="Minimize" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition border border-slate-700/50">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+            </button>
+            <button onclick="closeApp()" title="Close App" class="w-8 h-8 rounded-lg bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white flex items-center justify-center transition border border-rose-500/20">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Pipeline Dashboard</h1>
+                <p class="text-slate-400 text-xs sm:text-sm mt-0.5">Manage deals, track interactions, and export sales insights.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="userBadge" class="px-3 py-1.5 rounded-full border border-slate-700 bg-slate-800 text-slate-200 text-[11px] font-semibold uppercase tracking-wide"></div>
+                <button id="exportButton" onclick="exportCSV()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs rounded-xl transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Export CSV
+                </button>
+                <button id="addLeadButton" onclick="openModal()" class="px-4 py-2.5 bg-sky-500 hover:bg-sky-600 font-semibold text-xs rounded-xl text-white transition shadow-lg shadow-sky-500/20 active:scale-95">
+                    + Add Prospect
+                </button>
+                <button id="userTabButton" onclick="showUsersTab()" class="px-4 py-2.5 bg-violet-500 hover:bg-violet-600 font-semibold text-xs rounded-xl text-white transition shadow-lg shadow-violet-500/20 active:scale-95">
+                    + New User
+                </button>
+                <button id="logoutButton" onclick="logoutUser()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs rounded-xl transition">
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <div id="tabButtons" class="flex gap-2">
+            <button id="dashboardTab" onclick="showDashboardTab()" class="px-3 py-2 text-xs font-semibold rounded-xl border border-sky-500 bg-sky-500/10 text-sky-300">Dashboard</button>
+            <button id="usersTab" onclick="showUsersTab()" class="px-3 py-2 text-xs font-semibold rounded-xl border border-slate-700 bg-slate-800 text-slate-300">Users</button>
+        </div>
+
+        <div id="dashboardPanel" class="space-y-6">
+            <!-- 4 Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="p-4 bg-slate-900 border border-slate-800/80 rounded-2xl">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Pipeline Value</span>
+                <div class="text-2xl font-bold text-emerald-400 mt-1" id="metricPipelineVal">₹0</div>
+            </div>
+            <div class="p-4 bg-slate-900 border border-slate-800/80 rounded-2xl">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Prospects</span>
+                <div class="text-2xl font-bold text-white mt-1" id="metricTotal">0</div>
+            </div>
+            <div class="p-4 bg-slate-900 border border-slate-800/80 rounded-2xl">
+                <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider">New Opportunities</span>
+                <div class="text-2xl font-bold text-amber-400 mt-1" id="metricNew">0</div>
+            </div>
+            <div class="p-4 bg-slate-900 border border-slate-800/80 rounded-2xl">
+                <span class="text-xs font-semibold text-sky-400 uppercase tracking-wider">Deals Closed</span>
+                <div class="text-2xl font-bold text-sky-400 mt-1" id="metricClosed">0</div>
+            </div>
+        </div>
+
+        <!-- Filter Controls & Data Table -->
+        <div class="bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
+            <div class="p-4 border-b border-slate-800/80 bg-slate-900/50 flex flex-col sm:flex-row gap-3 justify-between items-center">
+                <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search leads by name, email or company..." class="w-full sm:w-80 px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                <select id="statusFilter" onchange="renderTable()" class="w-full sm:w-48 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-sky-500">
+                    <option value="ALL">All Statuses</option>
+                    <option value="New">New</option>
+                    <option value="Contacted">Contacted</option>
+                    <option value="Qualified">Qualified</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[700px]">
+                    <thead>
+                        <tr class="bg-slate-950/80 text-slate-400 text-xs font-semibold uppercase border-b border-slate-800 tracking-wider">
+                            <th class="p-4 pl-6">Name / Email</th>
+                            <th class="p-4">Company</th>
+                            <th class="p-4">Value (₹)</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4 pr-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadsTable" class="divide-y divide-slate-800/50 text-xs"></tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+
+        <div id="usersPanel" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-[420px_minmax(0,1fr)] gap-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <h2 id="userFormTitle" class="text-lg font-bold text-white mb-4">Create New User</h2>
+                    <form id="userForm" onsubmit="saveUser(event)" class="space-y-4">
+                        <input id="userId" type="hidden">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Username</label>
+                            <input id="newUsername" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Password</label>
+                            <input id="newPassword" type="password" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500" placeholder="Leave blank to keep current password">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Role</label>
+                            <select id="newRole" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500">
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" id="saveUserButton" class="flex-1 px-4 py-2.5 bg-violet-500 hover:bg-violet-600 text-white rounded-xl text-xs font-semibold shadow-lg shadow-violet-500/20">
+                                Create User
+                            </button>
+                            <button type="button" id="cancelUserEditButton" onclick="resetUserForm()" class="hidden px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-semibold">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="flex items-center justify-between border-b border-slate-800 p-4">
+                        <h2 class="text-lg font-bold text-white">User Accounts</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[500px]">
+                            <thead>
+                                <tr class="bg-slate-950/80 text-slate-400 text-xs font-semibold uppercase border-b border-slate-800 tracking-wider">
+                                    <th class="p-4 pl-6">Username</th>
+                                    <th class="p-4">Role</th>
+                                    <th class="p-4">Created</th>
+                                    <th class="p-4 pr-6 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable" class="divide-y divide-slate-800/50 text-xs"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create / Edit Modal -->
+    <div id="userResetModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-[95%] sm:w-full sm:max-w-md p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white">Reset Password</h3>
+                <button type="button" onclick="closeUserResetModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <form id="resetPasswordForm" onsubmit="submitPasswordReset(event)" class="space-y-4">
+                <input type="hidden" id="resetUserId">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Username</label>
+                    <input id="resetUsername" disabled class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white opacity-80">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">New Password</label>
+                    <input id="resetPassword" type="password" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                    <button type="button" onclick="closeUserResetModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-violet-500 hover:bg-violet-600 text-white rounded-xl text-xs font-semibold">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-[95%] sm:w-full sm:max-w-md p-6 space-y-4 shadow-2xl max-h-[85vh] overflow-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white" id="modalTitle">Create New Lead</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <form id="leadForm" onsubmit="saveLead(event)" class="space-y-3">
+                <input type="hidden" id="leadId">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Full Name *</label>
+                    <input type="text" id="name" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Email *</label>
+                    <input type="email" id="email" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Company</label>
+                        <input type="text" id="company" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Deal Value (₹)</label>
+                        <input type="number" step="0.01" id="value" placeholder="0.00" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Phone</label>
+                        <div class="flex items-center space-x-2">
+                            <select id="phoneCode" class="w-28 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                                <option value="+91">+91 (India)</option>
+                                <option value="+1">+1 (US)</option>
+                                <option value="+44">+44 (UK)</option>
+                                <option value="+61">+61 (Australia)</option>
+                                <option value="+971">+971 (UAE)</option>
+                                <option value="+92">+92 (Pakistan)</option>
+                                <option value="+966">+966 (Saudi Arabia)</option>
+                            </select>
+                            <input type="text" id="phoneNumber" placeholder="9876543210" class="flex-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                        </div>
+                        <div class="text-xs text-slate-400 mt-1" id="phonePreview">Formatted: —</div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Status</label>
+                        <select id="status" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                            <option value="New">New</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Qualified">Qualified</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Notes</label>
+                    <textarea id="notes" rows="3" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500 placeholder-slate-600 max-h-40 resize-y" placeholder="Initial conversation details..."></textarea>
+                </div>
+                <div class="flex flex-wrap justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-xs font-semibold shadow-lg shadow-sky-500/20">Save Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let leads = [];
+        let users = [];
+
+        async function minimizeApp() { await fetch('/api/window/minimize', { method: 'POST' }); }
+        async function closeApp() { await fetch('/api/window/close', { method: 'POST' }); }
+
+        async function fetchCurrentUser() {
+            try {
+                const res = await fetch('/api/me');
+                if (!res.ok) {
+                    window.location.href = '/login';
+                    return;
+                }
+                const user = await res.json();
+                const badge = document.getElementById('userBadge');
+                const isAdmin = user.role === 'admin';
+                badge.textContent = isAdmin ? 'Admin' : 'User';
+                document.getElementById('exportButton').style.display = isAdmin ? 'inline-flex' : 'none';
+                document.getElementById('addLeadButton').style.display = isAdmin ? 'inline-flex' : 'none';
+                document.getElementById('userTabButton').style.display = isAdmin ? 'inline-flex' : 'none';
+                document.getElementById('usersTab').style.display = isAdmin ? 'inline-flex' : 'none';
+                if (!isAdmin) {
+                    showDashboardTab();
+                }
+                return user;
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        }
+
+        async function logoutUser() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
+        function showDashboardTab() {
+            document.getElementById('dashboardPanel').classList.remove('hidden');
+            document.getElementById('usersPanel').classList.add('hidden');
+            document.getElementById('dashboardTab').classList.add('border-sky-500','bg-sky-500/10','text-sky-300');
+            document.getElementById('dashboardTab').classList.remove('border-slate-700','bg-slate-800','text-slate-300');
+            document.getElementById('usersTab').classList.add('border-slate-700','bg-slate-800','text-slate-300');
+            document.getElementById('usersTab').classList.remove('border-violet-500','bg-violet-500/10','text-violet-300');
+        }
+
+        function showUsersTab() {
+            document.getElementById('usersPanel').classList.remove('hidden');
+            document.getElementById('dashboardPanel').classList.add('hidden');
+            document.getElementById('usersTab').classList.add('border-violet-500','bg-violet-500/10','text-violet-300');
+            document.getElementById('usersTab').classList.remove('border-slate-700','bg-slate-800','text-slate-300');
+            document.getElementById('dashboardTab').classList.add('border-slate-700','bg-slate-800','text-slate-300');
+            document.getElementById('dashboardTab').classList.remove('border-sky-500','bg-sky-500/10','text-sky-300');
+            fetchUsers();
+        }
+
+        async function fetchLeads() {
+            try {
+                const res = await fetch('/api/leads');
+                const data = await res.json();
+                leads = Array.isArray(data) ? data : [];
+                updateMetrics();
+                renderTable();
+            } catch(e) {
+                leads = [];
+                updateMetrics();
+                renderTable();
+            }
+        }
+
+        function updateMetrics() {
+            document.getElementById('metricTotal').innerText = leads.length;
+            document.getElementById('metricNew').innerText = leads.filter(l => l.status === 'New').length;
+            document.getElementById('metricClosed').innerText = leads.filter(l => l.status === 'Closed').length;
+            
+            const totalVal = leads.reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
+            document.getElementById('metricPipelineVal').innerText = '₹' + totalVal.toLocaleString('en-IN', {minimumFractionDigits: 2});
+        }
+
+        function renderTable() {
+            const query = (document.getElementById('searchInput').value || '').toLowerCase();
+            const filter = document.getElementById('statusFilter').value;
+            
+            const filtered = leads.filter(l => {
+                const matchesSearch = (l.name && l.name.toLowerCase().includes(query)) ||
+                                      (l.company && l.company.toLowerCase().includes(query)) ||
+                                      (l.email && l.email.toLowerCase().includes(query));
+                const matchesStatus = filter === 'ALL' || l.status === filter;
+                return matchesSearch && matchesStatus;
+            });
+
+            const body = document.getElementById('leadsTable');
+            if (filtered.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">No matching leads found.</td></tr>`;
+                return;
+            }
+
+            const badgeStyles = {
+                'New': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                'Contacted': 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+                'Qualified': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+                'Closed': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+            };
+
+            body.innerHTML = filtered.map(l => `
+                <tr class="hover:bg-slate-800/30 transition">
+                    <td class="p-4 pl-6">
+                        <div class="font-semibold text-white">${escapeHtml(l.name)}</div>
+                        <div class="text-slate-400 text-[11px]">${escapeHtml(l.email)}</div>
+                    </td>
+                    <td class="p-4 text-slate-300">${escapeHtml(l.company || '—')}</td>
+                    <td class="p-4 font-semibold text-slate-200">₹${(parseFloat(l.value) || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td class="p-4">
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border ${badgeStyles[l.status] || badgeStyles['New']}">${escapeHtml(l.status || 'New')}</span>
+                    </td>
+                    <td class="p-4 pr-6 text-right space-x-2">
+                        <button onclick="editLead(${l.id})" class="text-sky-400 hover:text-sky-300 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-lg">Edit</button>
+                        <button onclick="deleteLead(${l.id})" class="text-rose-400 hover:text-rose-300 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-lg">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openModal(isEdit = false) {
+            document.getElementById('modalTitle').innerText = isEdit ? 'Edit Lead' : 'Create New Lead';
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('leadForm').reset();
+            document.getElementById('leadId').value = '';
+            // reset phone code default to +91 (India)
+            const codeEl = document.getElementById('phoneCode');
+            if (codeEl) codeEl.value = '+91';
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function editLead(id) {
+            const lead = leads.find(l => l.id === id);
+            if (!lead) return;
+            document.getElementById('leadId').value = lead.id;
+            document.getElementById('name').value = lead.name;
+            document.getElementById('email').value = lead.email;
+            document.getElementById('company').value = lead.company || '';
+            document.getElementById('value').value = lead.value || 0;
+            // split phone into country code and local number when possible
+            const phoneVal = lead.phone || '';
+            let code = '+91';
+            let local = '';
+            if (phoneVal.startsWith('+')) {
+                const m = phoneVal.match(/^(\+\d+)\s*(.*)$/);
+                if (m) { code = m[1]; local = m[2] || ''; }
+                else { local = phoneVal; }
+            } else {
+                local = phoneVal;
+            }
+            document.getElementById('phoneCode').value = code;
+            document.getElementById('phoneNumber').value = local;
+            document.getElementById('status').value = lead.status || 'New';
+            document.getElementById('notes').value = lead.notes || '';
+            if (typeof updatePhonePreview === 'function') updatePhonePreview();
+            openModal(true);
+        }
+
+        async function saveLead(e) {
+            e.preventDefault();
+            const id = document.getElementById('leadId').value;
+            const phoneCode = document.getElementById('phoneCode').value || '';
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            // basic client-side E.164 candidate
+            const candidate = phoneNumber ? (phoneCode + phoneNumber).replace(/\s+/g, '') : '';
+            if (phoneNumber && !/^\+\d{7,15}$/.test(candidate)) {
+                alert('Please enter a valid phone number for the selected country.');
+                return;
+            }
+            const payload = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                company: document.getElementById('company').value,
+                value: document.getElementById('value').value,
+                phone: candidate || '',
+                status: document.getElementById('status').value,
+                notes: document.getElementById('notes').value
+            };
+
+            const url = id ? `/api/leads/${id}` : '/api/leads';
+            const method = id ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                closeModal();
+                fetchLeads();
+            } else {
+                const err = await res.json();
+                if (res.status === 403) {
+                    alert('Only admins can create or modify leads.');
+                } else {
+                    alert(err.error || "Failed to save lead.");
+                }
+            }
+        }
+
+        async function deleteLead(id) {
+            if (confirm("Permanently delete this prospect?")) {
+                const res = await fetch(`/api/leads/${id}`, { method: 'DELETE' });
+                if (res.status === 403) {
+                    alert('Only admins can delete leads.');
+                    return;
+                }
+                fetchLeads();
+            }
+        }
+
+        function resetUserForm() {
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('userFormTitle').textContent = 'Create New User';
+            document.getElementById('saveUserButton').textContent = 'Create User';
+            document.getElementById('cancelUserEditButton').classList.add('hidden');
+            document.getElementById('newPassword').required = true;
+        }
+
+        function openUserResetModal(userId) {
+            const user = users.find(item => item.id === userId);
+            if (!user) return;
+            document.getElementById('resetUserId').value = user.id;
+            document.getElementById('resetUsername').value = user.username;
+            document.getElementById('resetPassword').value = '';
+            document.getElementById('userResetModal').classList.remove('hidden');
+        }
+
+        function closeUserResetModal() {
+            document.getElementById('userResetModal').classList.add('hidden');
+            document.getElementById('resetPasswordForm').reset();
+        }
+
+        function editUser(userId) {
+            const user = users.find(item => item.id === userId);
+            if (!user) return;
+            document.getElementById('userId').value = user.id;
+            document.getElementById('newUsername').value = user.username;
+            document.getElementById('newPassword').value = '';
+            document.getElementById('newPassword').required = false;
+            document.getElementById('newRole').value = user.role;
+            document.getElementById('userFormTitle').textContent = 'Edit User';
+            document.getElementById('saveUserButton').textContent = 'Save Changes';
+            document.getElementById('cancelUserEditButton').classList.remove('hidden');
+        }
+
+        async function saveUser(event) {
+            event.preventDefault();
+            const userId = document.getElementById('userId').value;
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value;
+            const role = document.getElementById('newRole').value;
+
+            if (!username) {
+                alert('Username is required.');
+                return;
+            }
+
+            if (!userId && !password) {
+                alert('Password is required for a new user.');
+                return;
+            }
+
+            const payload = { username, role };
+            if (password) payload.password = password;
+
+            const url = userId ? `/api/users/${userId}` : '/api/users';
+            const method = userId ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                alert(data.error || 'Unable to save user.');
+                return;
+            }
+
+            resetUserForm();
+            fetchUsers();
+            alert(userId ? 'User updated successfully.' : 'User created successfully.');
+        }
+
+        async function fetchUsers() {
+            try {
+                const res = await fetch('/api/users');
+                if (!res.ok) {
+                    if (res.status === 403) {
+                        alert('Only admins can manage users.');
+                        showDashboardTab();
+                        return;
+                    }
+                    throw new Error('Failed to load users');
+                }
+                users = await res.json();
+                const tbody = document.getElementById('usersTable');
+                if (!users.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500">No users found.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = users.map(user => `
+                    <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-4 pl-6 font-semibold text-white">${escapeHtml(user.username)}</td>
+                        <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border ${user.role === 'admin' ? 'bg-violet-500/10 text-violet-300 border-violet-500/20' : 'bg-slate-700/60 text-slate-300 border-slate-600'}">${escapeHtml(user.role)}</span></td>
+                        <td class="p-4 text-slate-300">${escapeHtml(user.created_at || '—')}</td>
+                        <td class="p-4 pr-6 text-right space-x-2">
+                            <button onclick="editUser(${user.id})" class="text-sky-400 hover:text-sky-300 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-lg">Edit</button>
+                            <button onclick="openUserResetModal(${user.id})" class="text-amber-400 hover:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">Reset</button>
+                            <button onclick="deleteUser(${user.id})" class="text-rose-400 hover:text-rose-300 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-lg">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                document.getElementById('usersTable').innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500">Unable to load users.</td></tr>';
+            }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Delete this user account?')) return;
+            const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                fetchUsers();
+            } else {
+                const err = await res.json();
+                alert(err.error || 'Unable to delete user.');
+            }
+        }
+
+        async function submitPasswordReset(event) {
+            event.preventDefault();
+            const userId = document.getElementById('resetUserId').value;
+            const password = document.getElementById('resetPassword').value;
+
+            if (!password) {
+                alert('Please enter a password.');
+                return;
+            }
+
+            const res = await fetch(`/api/users/${userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: document.getElementById('resetUsername').value, password, role: users.find(u => u.id === Number(userId))?.role || 'user' })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                alert(data.error || 'Unable to reset password.');
+                return;
+            }
+
+            closeUserResetModal();
+            alert('Password updated successfully.');
+        }
+
+        function exportCSV() {
+            if (document.getElementById('userBadge').textContent.trim() !== 'Admin') {
+                alert('Only admins can export CSV files.');
+                return;
+            }
+
+            const popup = window.open('/api/export/csv', '_blank');
+            if (!popup) {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = '/api/export/csv';
+                document.body.appendChild(iframe);
+                setTimeout(() => iframe.remove(), 2000);
+            }
+        }
+
+        function updatePhonePreview() {
+            const code = document.getElementById('phoneCode')?.value || '';
+            const number = document.getElementById('phoneNumber')?.value.trim() || '';
+            const previewEl = document.getElementById('phonePreview');
+            if (!previewEl) return;
+            const candidate = (code + (number ? number : '')).replace(/\s+/g, '');
+            if (!number) {
+                previewEl.innerText = 'Formatted: —';
+                return;
+            }
+            if (/^\+\d{7,15}$/.test(candidate)) {
+                previewEl.innerText = 'Formatted: ' + candidate;
+            } else {
+                previewEl.innerText = 'Formatted: invalid';
+            }
+        }
+
+        function escapeHtml(str) {
+            return str ? String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) : '';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchCurrentUser();
+            fetchLeads();
+            fetchUsers();
+            const codeEl = document.getElementById('phoneCode');
+            const numEl = document.getElementById('phoneNumber');
+            if (codeEl) codeEl.addEventListener('change', updatePhonePreview);
+            if (numEl) numEl.addEventListener('input', updatePhonePreview);
+            updatePhonePreview();
+        });
+    </script>
+</body>
+</html>

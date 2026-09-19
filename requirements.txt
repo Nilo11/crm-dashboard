@@ -1,0 +1,4 @@
+phonenumbers
+flask
+flask-cors
+pywebview

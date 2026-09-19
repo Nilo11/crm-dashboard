@@ -1,0 +1,14 @@
+
+--- create_lead exception ---
+Traceback (most recent call last):
+  File "D:\PROJECTS\crm-dashboard\app.py", line 113, in create_lead
+    cursor.execute(
+    ~~~~~~~~~~~~~~^
+        """INSERT INTO leads (name, email, phone, company, status, value, notes)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+        )
+        ^
+    )
+    ^
+sqlite3.OperationalError: table leads has no column named value
